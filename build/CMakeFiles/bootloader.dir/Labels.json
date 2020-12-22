@@ -1,0 +1,43 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "/Users/jackyyuen/Codes/ESP32/RSD/build/CMakeFiles/bootloader"
+		},
+		{
+			"file" : "/Users/jackyyuen/Codes/ESP32/RSD/build/CMakeFiles/bootloader.rule"
+		},
+		{
+			"file" : "/Users/jackyyuen/Codes/ESP32/RSD/build/CMakeFiles/bootloader-complete.rule"
+		},
+		{
+			"file" : "/Users/jackyyuen/Codes/ESP32/RSD/build/bootloader-prefix/src/bootloader-stamp/bootloader-install.rule"
+		},
+		{
+			"file" : "/Users/jackyyuen/Codes/ESP32/RSD/build/bootloader-prefix/src/bootloader-stamp/bootloader-mkdir.rule"
+		},
+		{
+			"file" : "/Users/jackyyuen/Codes/ESP32/RSD/build/bootloader-prefix/src/bootloader-stamp/bootloader-download.rule"
+		},
+		{
+			"file" : "/Users/jackyyuen/Codes/ESP32/RSD/build/bootloader-prefix/src/bootloader-stamp/bootloader-update.rule"
+		},
+		{
+			"file" : "/Users/jackyyuen/Codes/ESP32/RSD/build/bootloader-prefix/src/bootloader-stamp/bootloader-patch.rule"
+		},
+		{
+			"file" : "/Users/jackyyuen/Codes/ESP32/RSD/build/bootloader-prefix/src/bootloader-stamp/bootloader-configure.rule"
+		},
+		{
+			"file" : "/Users/jackyyuen/Codes/ESP32/RSD/build/bootloader-prefix/src/bootloader-stamp/bootloader-build.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"bootloader"
+		],
+		"name" : "bootloader"
+	}
+}

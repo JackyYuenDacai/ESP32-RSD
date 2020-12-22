@@ -1,0 +1,6 @@
+target remote :3333
+symbol-file /Users/jackyyuen/Codes/ESP32/RSD/build/hello-world.elf
+mon reset halt
+flushregs
+thb app_main
+c

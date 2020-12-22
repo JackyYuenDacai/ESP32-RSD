@@ -1,0 +1,68 @@
+http://wifihk.ust.hk/login.html?switch_url=https://wireless.ust.hk/login.html&ap_mac=dc:8c:37:9a:1c:00&client_mac=38:f9:d3:18:df:5b&wlan=Wi-Fi.HK%20via%20HKUST&redirect=captive.apple.com/
+http://wifihk.ust.hk/login.html?switch_url=https://wireless.ust.hk/login.html&ap_mac=dc:8c:37:9a:1c:00&client_mac=30:ae:a4:4f:91:58&wlan=Wi-Fi.HK%20via%20HKUST&redirect=captive.apple.com:80/
+
+curl -X POST -F "buttonClicked=4" -F "redirect_url=" "http://wifihk.ust.hk/login.html"
+var link = document.location.href;
+      var searchString = "redirect=";
+      var equalIndex = link.indexOf(searchString);
+      var redirectUrl = "";
+
+      if (document.forms[0].action == "") {
+      var url = window.location.href;
+      var args = new Object();
+      var query = location.search.substring(1);
+      var pairs = query.split("&");
+          for(var i=0;i<pairs.length;i++){
+              var pos = pairs[i].indexOf('=');
+              if(pos == -1) continue;
+              var argname = pairs[i].substring(0,pos);
+              var value = pairs[i].substring(pos+1);
+              args[argname] = unescape(value);
+          }
+          document.forms[0].action = args.switch_url;
+      }
+      if(equalIndex >= 0) {
+            equalIndex += searchString.length;
+            redirectUrl = "";
+            redirectUrl += link.substring(equalIndex);
+      }
+      if(redirectUrl.length > 255)
+      redirectUrl = redirectUrl.substring(0,255);
+      document.forms[0].redirect_url.value = redirectUrl;
+      document.forms[0].buttonClicked.value = 4;
+      document.forms[0].submit();
+
+curl 'https://wireless.ust.hk/login.html' \
+  -H 'Connection: keep-alive' \
+  -H 'Cache-Control: max-age=0' \
+  -H 'Upgrade-Insecure-Requests: 1' \
+  -H 'Origin: http://wifihk.ust.hk' \
+  -H 'Content-Type: application/x-www-form-urlencoded' \
+  -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 11_1_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36' \
+  -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9' \
+  -H 'Sec-Fetch-Site: cross-site' \
+  -H 'Sec-Fetch-Mode: navigate' \
+  -H 'Sec-Fetch-User: ?1' \
+  -H 'Sec-Fetch-Dest: document' \
+  -H 'Referer: http://wifihk.ust.hk/' \
+  -H 'Accept-Language: en-GB,en-US;q=0.9,en;q=0.8,zh-CN;q=0.7,zh-TW;q=0.6,zh;q=0.5' \
+  -H 'Cookie: _ga=GA1.2.1553053678.1606551631; __cfduid=d337146dcf683b8f322ea7ec891ffc6051608494035' \
+  --data-raw 'buttonClicked=4&redirect_url=captive.apple.com%2F&err_flag=0' \
+  --compressed
+
+
+  curl 'https://wireless.ust.hk/login.html' \
+  -H 'Connection: keep-alive' \
+  -H 'Cache-Control: max-age=0' \
+  -H 'Upgrade-Insecure-Requests: 1' \
+  -H 'Origin: http://wifihk.ust.hk' \
+  -H 'Content-Type: application/x-www-form-urlencoded' \
+  -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 11_1_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36' \
+  -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9' \
+  -H 'Sec-Fetch-Site: cross-site' \
+  -H 'Sec-Fetch-Mode: navigate' \
+  -H 'Sec-Fetch-User: ?1' \
+  -H 'Sec-Fetch-Dest: document' \
+  -H 'Referer: http://wifihk.ust.hk/' \
+  --data-raw 'buttonClicked=4&redirect_url=captive.apple.com%2F&err_flag=0' \
+  --compressed
