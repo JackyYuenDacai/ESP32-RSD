@@ -1,103 +1,64 @@
 #include "sound_task.h"
 
-#define UTOF_32(ab) ((float)ab)/((float)5000)
+#define UTOF_32(ab) ((float)ab) / ((float)5000)
 
-uint32_t sound_samples[MAX_SAMPLES_BUF]={0};
+uint32_t sound_samples[MAX_SAMPLES_BUF] = {0};
 int sound_samples_start = 0;
 int sound_samples_index = 0;
-struct nas_entry* pack_into_entry(struct nas_entry* entry,struct tm* time,int milli_mul,int milli_index,float avg_amp,float max_amp,float min_amp){
+struct nas_entry *pack_into_entry(struct nas_entry *entry, struct tm *time, int milli_mul, int milli_index, float avg_amp, float max_amp, float min_amp)
+{
 	//22-01-2015 10:15:55 AM
-	if(entry==NULL)return NULL;
-	
-	if(time->tm_hour == 12){
-		sprintf(entry->time_str,"%hu-%hu-%d%%20%hu:%hu:%hu%%20PM",time->tm_mday,time->tm_mon+1,time->tm_year+1900,time->tm_hour,time->tm_min,time->tm_sec);
+	if (entry == NULL)
+		return NULL;
+
+	if (time->tm_hour == 12)
+	{
+		sprintf(entry->time_str, "%hu-%hu-%d%%20%hu:%hu:%hu%%20PM", time->tm_mday, time->tm_mon + 1, time->tm_year + 1900, time->tm_hour, time->tm_min, time->tm_sec);
 	}
-	else if(time->tm_hour>12){
-		sprintf(entry->time_str,"%hu-%hu-%d%%20%hu:%hu:%hu%%20PM",time->tm_mday,time->tm_mon+1,time->tm_year+1900,time->tm_hour-12,time->tm_min,time->tm_sec);
-	}else{
-		sprintf(entry->time_str,"%hu-%hu-%d%%20%hu:%hu:%hu%%20AM",time->tm_mday,time->tm_mon+1,time->tm_year+1900,time->tm_hour,time->tm_min,time->tm_sec);
+	else if (time->tm_hour > 12)
+	{
+		sprintf(entry->time_str, "%hu-%hu-%d%%20%hu:%hu:%hu%%20PM", time->tm_mday, time->tm_mon + 1, time->tm_year + 1900, time->tm_hour - 12, time->tm_min, time->tm_sec);
+	}
+	else
+	{
+		sprintf(entry->time_str, "%hu-%hu-%d%%20%hu:%hu:%hu%%20AM", time->tm_mday, time->tm_mon + 1, time->tm_year + 1900, time->tm_hour, time->tm_min, time->tm_sec);
 	}
 
-	ESP_LOGI(TAG,"%s",entry->time_str);
+	ESP_LOGI(TAG, "%s", entry->time_str);
 
-	entry->avg_amp=avg_amp;
-	entry->max_amp=max_amp;
-	entry->min_amp=min_amp;
-	entry->milli_index=milli_index;
-	entry->milli_mul=milli_mul;
+	entry->avg_amp = avg_amp;
+	entry->max_amp = max_amp;
+	entry->min_amp = min_amp;
+	entry->milli_index = milli_index;
+	entry->milli_mul = milli_mul;
 	return entry;
 }
-#define MIN_GAP 20
-void push_nas_queue(struct tm* time){
-	struct nas_entry entry_buf;
-	uint32_t sum=0,min=100000,max=0;
-	float avg=0;
-
-	sum=0,min=100000,max=0,avg=0;
-	for(int i=0;i<1000/MIN_GAP;i++){
-		if(sound_samples[i]>max)max=sound_samples[i];
-		if(sound_samples[i]<min)min=sound_samples[i];
-		sum+=sound_samples[i];
-	}
-	avg=((float)sum)/(1000/MIN_GAP)/5000;
-	pack_into_entry(&entry_buf,time,1000,0,avg,UTOF_32(max),UTOF_32(min));
-	nas_queue_push(&entry_buf);
-
-	for(int j=0;j<2;j++){
-		sum=0,min=100000,max=0,avg=0;
-		for(int i=j*(1000/MIN_GAP/2);i<(1+j)*(1000/MIN_GAP/2);i++){
-			if(sound_samples[i]>max)max=sound_samples[i];
-			if(sound_samples[i]<min)min=sound_samples[i];
-			sum+=sound_samples[i];
-		}
-		avg=((float)sum)/(1000/MIN_GAP/2)/5000;
-		pack_into_entry(&entry_buf,time,1000/2,j,avg,UTOF_32(max),UTOF_32(min));
-		nas_queue_push(&entry_buf);
-	}
-
-/*
-	for(int j=0;j<10;j++){
-		sum=0,min=100000,max=0,avg=0;
-		for(int i=j*(1000/MIN_GAP/10);i<(1+j)*(1000/MIN_GAP/10);i++){
-			if(sound_samples[i]>max)max=sound_samples[i];
-			if(sound_samples[i]<min)min=sound_samples[i];
-			sum+=sound_samples[i];
-		}
-		avg=((float)sum)/(1000/MIN_GAP/10);
-		pack_into_entry(&entry_buf,time,1000/10,j,avg,UTOF_32(max),UTOF_32(min));
-		nas_queue_push(&entry_buf);
-	}
-*/
-	ESP_LOGI(TAG,"PUSHED 13 ENTRIES");
+void record_one_sample(uint32_t vol)
+{
+	sound_samples_index = (sound_samples_index + 1) % MAX_SAMPLES_BUF;
+	sound_samples[sound_samples_index] = vol;
 }
-
-void record_one_sample(uint32_t vol){
-	sound_samples_index = (sound_samples_index + 1)%MAX_SAMPLES_BUF;
-	sound_samples[sound_samples_index]=vol;
-}
-struct nas_entry* get_record_package(struct nas_entry* entry,struct tm* time){
+struct nas_entry *get_record_package(struct nas_entry *entry, struct tm *time)
+{
 	float sum = 0.0;
-	float avg=0.0;
-	float max=-9999.9;
-	float min=9999.9;
+	float avg = 0.0;
+	float max = -9999.9;
+	float min = 9999.9;
 	int count = 0;
-	while(sound_samples_start != sound_samples_index){
+	while (sound_samples_start != sound_samples_index)
+	{
 		sum += (float)sound_samples[sound_samples_start];
-		if(max<(float)sound_samples[sound_samples_start])max = (float)sound_samples[sound_samples_start];
-		if(min>(float)sound_samples[sound_samples_start])min = (float)sound_samples[sound_samples_start];
-		sound_samples_start = (sound_samples_start + 1)%MAX_SAMPLES_BUF;
-		count ++;
+		if (max < (float)sound_samples[sound_samples_start])
+			max = (float)sound_samples[sound_samples_start];
+		if (min > (float)sound_samples[sound_samples_start])
+			min = (float)sound_samples[sound_samples_start];
+		sound_samples_start = (sound_samples_start + 1) % MAX_SAMPLES_BUF;
+		count++;
 	}
 	avg = sum / ((float)count);
-	return pack_into_entry(entry,time,SOUND_TASK_MS,count,avg,max,min);
+	return pack_into_entry(entry, time, SOUND_TASK_MS, count, avg, max, min);
 }
-
-int64_t xx_time_get_time() {
-	struct timeval tv;
-	gettimeofday(&tv, NULL);
-	return (tv.tv_sec * 1000LL + (tv.tv_usec / 1000LL));
-}
-static void sound_task(void *pvParameters)
+void sound_task(void *pvParameters)
 {
 	//Characterize ADC
 	int64_t last_mtime = 0;

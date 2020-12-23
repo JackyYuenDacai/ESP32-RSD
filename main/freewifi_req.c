@@ -114,137 +114,6 @@ void http_get_task(void *pvParameters)
 		}
 	}
 }
-char *get_date(char *http_response,int rlen)
-{
-	char ret_url[128] = {0};
-	char **lines;
-	char html_status[32] = {0};
-	int i = 0, j = 0;
-	int line_len[10] = {0};
-	int cl = 0;
-	while (http_response[i] != ' ')
-		i++;
-	i++;
-	while (http_response[i] != '\n')
-		html_status[j++] = http_response[i++];
-
-	int status_code = atoi(html_status);
-	if (status_code != 302)
-	{
-		return (char *)NULL;
-	}
-	i = 0;
-	j = 0;
-	//"ion: "
-	while ((http_response[i] == 'a' && http_response[i + 1] == 't' && http_response[i + 2] == 'e' && http_response[i + 3] == ':') == 0 && i <= rlen - 3)
-		i++;
-	//Skip through "Location: "
-	i += 4;
-	while (http_response[i] == ' ')
-		i++;
-	while (http_response[i] != '\n')
-	{
-		ret_url[j++] = http_response[i++];
-	}
-//Mon, 21 Dec 2020 13:16:30 GMT
-	ESP_LOGI(TAG, "DATE SYNC: %s", ret_url);
-
-	time_t now;
-	struct tm timeinfo;
-	time(&now);
-	localtime_r(&now, &timeinfo);
-
-	struct tm remote_ti;
-	parse_time2tm(&remote_ti,ret_url);
-	time_t sec = mktime(&remote_ti); // make time_t
-	ESP_LOGI(TAG,"Y:%d M:%d D:%d",remote_ti.tm_year,remote_ti.tm_mon,remote_ti.tm_mday);
-
-	if(timeinfo.tm_year < (2016-1900) || abs(timeinfo.tm_sec - remote_ti.tm_sec)>=5){
-		time_t t = mktime(&remote_ti);
-    	printf("Set time: %s ;TV_SEC: %ld", asctime(&remote_ti),sec);
-    	struct timeval now = { .tv_sec = t};
-		now.tv_usec = 0;
-    	settimeofday(&now, NULL);
-	}
-	return ret_url;
-}
-char *get_login_url(char *http_response)
-{
-	char ret_url[128] = {0};
-	char **lines;
-	char html_status[32] = {0};
-	int i = 0, j = 0;
-	int line_len[10] = {0};
-	int cl = 0;
-	int rlen = strlen(http_response);
-	for (int i = 0, ll = 0; i < rlen + 1; i++)
-	{
-		if (http_response[i] == '\n' || http_response[i] == '\0')
-		{
-			line_len[cl] = i - ll;
-			ll = i;
-			cl++;
-		}
-	}
-
-	while (http_response[i] != ' ')
-		i++;
-	i++;
-	while (http_response[i] != ' ')
-	{
-		html_status[j++] = http_response[i];
-		i++;
-	}
-	int status_code = atoi(html_status);
-	if (status_code != 200)
-		return (char *)NULL;
-	if (strstr(http_response, "Location") == NULL)
-		return (char *)NULL;
-
-	i = 0;
-	j = 0;
-	//"ion: "
-	while ((http_response[i] == '_' && http_response[i + 1] == 'u' && http_response[i + 2] == 'r' && http_response[i + 3] == 'l') == 0 && i <= rlen - 3)
-		i++;
-	//Skip through "Location: "
-	i += 5;
-	while (http_response[i] == ' ')
-		i++;
-	while (http_response[i] != '\n')
-	{
-		ret_url[j++] = http_response[i++];
-	}
-
-	i = 0;
-	j = 0;
-	while ((http_response[i] == 's' && http_response[i + 1] == ':' && http_response[i + 2] == '/' && http_response[i + 3] == '/') == 0 && i <= rlen - 3)
-		i++;
-	i += 5;
-	while (http_response[i] == '/')
-		i++;
-	i -= 1;
-	while (http_response[i] != '/')
-	{
-		HTTPS_HOST[j++] = http_response[i++];
-	}
-	sprintf(HTTPS_HOST, "wireless.ust.hk");
-	sprintf(HTTPS_URL, "https://wireless.ust.hk/login.html");
-	sprintf(HTTPS_REQUEST, HTTPS_REQUEST_FORMAT, HTTPS_URL, HTTPS_HOST);
-
-	ESP_LOGI(TAG, "Redirect url obtained: %s", ret_url);
-	ESP_LOGI(TAG, "Auth host obtained: %s", HTTPS_HOST);
-	ESP_LOGI(TAG, "POST REQ: %s", HTTPS_REQUEST);
-	return ret_url;
-}
-void freewifi_init(void)
-{
-	xTaskCreate(&http_get_task, "http_get_task", 4096, NULL, 5, NULL);
-	xTaskCreate(&https_get_task, "https_get_task", 8192, NULL, 6, NULL);
-}
-
-void after_req()
-{
-}
 
 void https_get_task(void *pvParameters)
 {
@@ -410,4 +279,10 @@ void https_get_task(void *pvParameters)
 		ESP_LOGI(TAG, "Completed %d requests", ++free_wifi_request_count);
 		vTaskDelay(1000 / portTICK_PERIOD_MS);
 	}
+}
+
+void freewifi_init(void)
+{
+	xTaskCreate(&http_get_task, "http_get_task", 4096, NULL, 5, NULL);
+	xTaskCreate(&https_get_task, "https_get_task", 8192, NULL, 6, NULL);
 }
