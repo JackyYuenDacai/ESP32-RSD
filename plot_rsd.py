@@ -10,11 +10,7 @@ SIGMA = 56
 WINDOW_SIZE = 7
 IF_SMOOTH = True
 config = {
-  'user': 'dlm_user',
-  'password': '-Sm4Dgt:q#?9t(qv',
-  'host': '45.63.35.198',
-  'database': 'dlm_db',
-  'raise_on_warnings': True
+
 }
 def smooth_data(data):
 	if(IF_SMOOTH):
