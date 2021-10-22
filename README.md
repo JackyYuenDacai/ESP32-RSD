@@ -1,5 +1,5 @@
 # RSD Report S Device
-
+Noise amplitude recording system, using esp32 to measure and send data back to server, view using flutter app. 
 ## How to use 
 
 Follow detailed instructions provided specifically for this example. 
